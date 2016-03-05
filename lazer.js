@@ -10,6 +10,7 @@ document.body.appendChild(canvas);
 
 var bgReady = false;
 var bgImage = new Image();
+var dead = 0;
 bgImage.onload = function() {
 	bgReady = true;
 };
@@ -141,6 +142,8 @@ var reset = function() {
 	
 	hero.x = (canvas.width / 2) - 50;
 	hero.y = (canvas.height / 2) - 50;
+	
+	lazer.power = 5;
 
 	spawnMonster(monster);
 };
@@ -197,6 +200,13 @@ var update = function (modifier) {
 	} else {
 		monster.y += modifier * monster.speed;
 	}
+	
+	if (dead > 0) {
+		dead -= 1*modifier;
+		if (dead < 0){
+			dead = 0;
+		}
+	}
 
 	// Are they touching? (Player Dies)
 	if (hero.x <= (monster.x + 32)
@@ -209,6 +219,8 @@ var update = function (modifier) {
 		}
 		
 		score = 0;
+		
+		dead = 1;
 		
 		reset();
 	}
@@ -281,6 +293,13 @@ var render = function () {
 	
 	// Lazer Power
 	ctx.fillText("Power:", 32, (600 - 32));
+	
+	// Draw death message
+	ctx.save();
+	ctx.globalAlpha = dead;
+	ctx.font = "300px Helvetica";
+	ctx.fillText("DEAD", -20, 150);
+	ctx.restore();
 	
 };
 

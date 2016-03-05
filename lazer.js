@@ -149,15 +149,27 @@ var reset = function() {
 var update = function (modifier) {
 	if (38 in keysDown) { // player holding up
 		hero.y -= hero.speed * modifier;
+		if (hero.y < -36) {
+			hero.y = -36;
+		}
 	}
 	if (40 in keysDown) { // player holding down
 		hero.y += hero.speed * modifier;
+		if (hero.y > canvas.height - 68) {
+			hero.y = canvas.height - 68;
+		}
 	}
 	if (37 in keysDown) { // player holding left
 		hero.x -= hero.speed * modifier;
+		if (hero.x < -36) {
+			hero.x = -36;
+		}
 	}
 	if (39 in keysDown) { // player holding right
 		hero.x += hero.speed * modifier;
+		if (hero.x > canvas.width - 68) {
+			hero.x = canvas.width - 68;
+		}
 	}
 	if (65 in keysDown) { // player holding 'a'
 		// Only works if monster is one the screen

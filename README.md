@@ -5,5 +5,5 @@ A simple game based in Javascript
 
 Game was originally built from this tutorial: http://www.lostdecadegames.com/how-to-make-a-simple-html5-canvas-game/
 
-All artwork was created by Evan Finnigan.
+All artwork was created by myself, Evan Finnigan, with the exception of the crown on images/champion.png. This crown is the logo for QHacks, where I developed this game, and is a tribute to the hackathon.
 Artwork was created using paint.net

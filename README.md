@@ -1,4 +1,4 @@
-# monster_lazer
+# Monster Lazer Shooter of Awesome
 A simple game based in Javascript
 
 ![Screenshot](http://i.imgur.com/k2m6qJS.png)

@@ -10,13 +10,11 @@ document.body.appendChild(canvas);
 
 var bgReady = false;
 var bgImage = new Image();
-var dead = 0;
-var win = 0;
-
 bgImage.onload = function() {
 	bgReady = true;
 };
 bgImage.src = "images/cave.png";
+
 
 // Hero image
 
@@ -27,7 +25,9 @@ heroImage.onload = function() {
 };
 heroImage.src = "images/hero.png";
 
+
 // Champion image
+
 var championReady = false;
 var championImage = new Image();
 championImage.onload = function() {
@@ -35,7 +35,10 @@ championImage.onload = function() {
 };
 championImage.src = "images/champion.png";
 
-// Monster images
+
+// MONSTER IMAGES
+
+// First Monster
 
 var monsterReady = false;
 var monsterImage = new Image();
@@ -51,6 +54,41 @@ monsterHit.onload = function() {
 };
 monsterHit.src = "images/monster_hit.png";
 
+
+// Second Monster
+
+var uglyReady = false;
+var uglyImage = new Image();
+uglyImage.onload = function() {
+	uglyReady = true;
+};
+uglyImage.src = "images/ugly.png";
+
+var uglyHitReady = false;
+var uglyHit = new Image();
+uglyHit.onload = function() {
+	uglyHitReady = true;
+};
+uglyHit.src = "images/ugly_hit.png";
+
+
+// Third Monster
+
+var grumpyReady = false;
+var grumpyImage = new Image();
+grumpyImage.onload = function() {
+	grumpyReady = true;
+};
+grumpyImage.src = "images/grumpy.png";
+
+var grumpyHitReady = false;
+var grumpyHit = new Image();
+grumpyHit.onload = function() {
+	grumpyHitReady = true;
+};
+grumpyHit.src = "images/grumpy_hit.png";
+
+
 // Game Objects
 
 // Player
@@ -58,51 +96,94 @@ var hero = {
 	speed: 256 // movement in pixels per second
 };
 
-// Stationary monster
+
+// Monster
 var monster = {
 	speed: 100,
-	health: 3
+	health: 2,
+	max_health: 2,
+	img: monsterImage,
+	img_ready: monsterReady,
+	img_hit: monsterHit,
+	img_hit_ready: monsterHitReady
 };
+
+
+// Ugly
+var ugly = {
+	speed: 0,
+	max_speed: 110,
+	health: 3,
+	max_health: 3,
+	img: uglyImage,
+	img_ready: uglyReady,
+	img_hit: uglyHit,
+	img_hit_ready: uglyHitReady
+};
+
+
+// Grumpy
+var grumpy = {
+	speed: 0,
+	max_speed: 120,
+	health: 4,
+	max_health: 4,
+	img: grumpyImage,
+	img_ready: grumpyReady,
+	img_hit: grumpyHit,
+	img_hit_ready: grumpyHitReady
+};
+
 
 // Lazer beam
 var lazer = {
 	on: false,
-	power: 5
+	max_power: 5,
+	power: 5,
+	replenish_rate: 1,
+	target: monster
 };
+
 
 // Points
 var score = 0;
 var highscore = 0;
-var win_score = 10;
+var win_score = 12;
+var level = 0;
 
-var spawnMonster = function(monster) {
+var dead = 0;
+var win = 0;
+var new_level = 3;
+
+var spawnMonster = function(mnstr) {
 	
+	// Turn off the lazer
 	lazer.on = false;
 	
 	var pickWall = Math.random();
 			
 	// Throw new monster somewhere just off the screen randomly
 	if (pickWall < 0.25) {
-		monster.x = -100;
-		monster.y = Math.random()*canvas.height;
+		mnstr.x = -100;
+		mnstr.y = Math.random()*canvas.height;
 	} else if (pickWall < 0.5) {
-		monster.x = Math.random()*canvas.width;
-		monster.y = -100;
+		mnstr.x = Math.random()*canvas.width;
+		mnstr.y = -100;
 	} else if (pickWall < 0.75) {
-		monster.x = canvas.width + 100;
-		monster.y = Math.random()*canvas.height;
+		mnstr.x = canvas.width + 100;
+		mnstr.y = Math.random()*canvas.height;
 	} else {
-		monster.x = Math.random()*canvas.width;
-		monster.y = canvas.height + 100;
+		mnstr.x = Math.random()*canvas.width;
+		mnstr.y = canvas.height + 100;
 	}
 					
-	monster.health = 3;
+	mnstr.health = mnstr.max_health;
 }
 
-var drawMonster = function(img){
+var drawMonster = function(img, mnstr){
 	
 	// Monster
-	ctx.drawImage(img, monster.x, monster.y);
+	ctx.drawImage(img, mnstr.x, mnstr.y);
 	
 	// Health bar
 	ctx.save();
@@ -110,8 +191,8 @@ var drawMonster = function(img){
 	ctx.strokeStyle='yellow';
 	ctx.lineWidth=10;
 	ctx.beginPath();
-	ctx.moveTo((monster.x + 50 + 50*(monster.health/3)), monster.y);
-	ctx.lineTo((monster.x + 50 - 50*(monster.health/3)), monster.y);
+	ctx.moveTo((mnstr.x + 50 + 50*(mnstr.health/mnstr.max_health)), mnstr.y);
+	ctx.lineTo((mnstr.x + 50 - 50*(mnstr.health/mnstr.max_health)), mnstr.y);
 	ctx.stroke();
 	
 	ctx.restore();
@@ -148,7 +229,13 @@ addEventListener("keyup", function (e) {
 	delete keysDown[e.keyCode];
 }, false);
 
-// Reset the game when the player catches a monster
+// Remove a monster from the game
+var remove = function(mnstr) {
+	mnstr.speed = 0;
+	spawnMonster(mnstr);
+};
+
+// Reset when the player dies
 var reset = function() {
 	
 	hero.x = (canvas.width / 2) - 50;
@@ -157,10 +244,33 @@ var reset = function() {
 	lazer.power = 5;
 
 	spawnMonster(monster);
+	remove(ugly);
+	remove(grumpy);
+};
+
+// Controls Monster Movement towards player
+var move = function(mnstr, modifier) {
+	if (hero.x < mnstr.x){
+		mnstr.x -= modifier * mnstr.speed;
+	} else {
+		mnstr.x += modifier * mnstr.speed;
+	}
+	
+	if (hero.y < mnstr.y){
+		mnstr.y -= modifier * mnstr.speed;
+	} else {
+		mnstr.y += modifier * mnstr.speed;
+	}
+};
+
+var distance_squared = function(hro, mnstr) {
+	return (Math.pow(mnstr.x - hro.x, 2) + Math.pow(mnstr.y - hro.y, 2));
 };
 
 // Update game objects
 var update = function (modifier) {
+	
+	// Player Motion Control
 	if (38 in keysDown) { // player holding up
 		hero.y -= hero.speed * modifier;
 		if (hero.y < -36) {
@@ -185,12 +295,27 @@ var update = function (modifier) {
 			hero.x = canvas.width - 68;
 		}
 	}
+	
+	// Choose lazer.lazer.lazer.lazer.lazer.lazer.target (closest monster)
+	var d1 = distance_squared(hero, monster);
+	var d2 = distance_squared(hero, ugly);
+	var d3 = distance_squared(hero, grumpy);
+	
+	if (d1 <= d2 && d1 <= d3) {
+		lazer.target = monster;
+	} else if (d2 < d1 && d2 <= d3) {
+		lazer.target = ugly;
+	} else {
+		lazer.target = grumpy;
+	}
+	
+	// Fire Lazer 
 	if (65 in keysDown) { // player holding 'a'
 		// Only works if a monster is one the screen
-		if (monster.x < canvas.width - 50
-			&& monster.y < canvas.height - 50
-			&& monster.x > -50
-			&& monster.y > -50){
+		if (lazer.target.x < canvas.width - 50
+			&& lazer.target.y < canvas.height - 50
+			&& lazer.target.x > -50
+			&& lazer.target.y > -50){
 			// Attack
 			lazer.on = true;
 		} else {
@@ -200,17 +325,9 @@ var update = function (modifier) {
 		lazer.on = false;
 	}
 	
-	if (hero.x < monster.x){
-		monster.x -= modifier * monster.speed;
-	} else {
-		monster.x += modifier * monster.speed;
-	}
-	
-	if (hero.y < monster.y){
-		monster.y -= modifier * monster.speed;
-	} else {
-		monster.y += modifier * monster.speed;
-	}
+	move(monster, modifier);
+	move(ugly, modifier);
+	move(grumpy, modifier);
 	
 	if (dead > 0) {
 		dead -= 1*modifier;
@@ -225,18 +342,29 @@ var update = function (modifier) {
 			win = 0;
 		}
 	}
+	
+	if (new_level > 0) {
+		new_level -= 1*modifier;
+		if (new_level < 0){
+			new_level = 0;
+		}
+	}
 
 	// Are they touching? (Player Dies)
-	if (hero.x <= (monster.x + 32)
-		&& monster.x <= (hero.x + 32)
-		&& hero.y <= (monster.y + 32)
-		&& monster.y <= (hero.y + 32)) {
+	if (hero.x <= (lazer.target.x + 32)
+		&& lazer.target.x <= (hero.x + 32)
+		&& hero.y <= (lazer.target.y + 32)
+		&& lazer.target.y <= (hero.y + 32)) {
 		
 		if (score > highscore) {
 			highscore = score;
 		}
 		
 		score = 0;
+		level = 0;
+		new_level = 3;
+		lazer.replenish_rate = 1;
+		lazer.max_power = 5;
 		
 		dead = 3;
 		
@@ -247,19 +375,43 @@ var update = function (modifier) {
 		
 		lazer.power -= 3*modifier;
 		
-		monster.health -= 2*modifier;
+		lazer.target.health -= 2*modifier;
 		
 		// Monster dies
-		if (monster.health <= 0) {
+		if (lazer.target.health <= 0) {
 			score++;
 			if (score == win_score){
 				win = 3;
 			}
-			spawnMonster(monster);
+			if (score % 4 == 0) {
+				level++;
+				new_level = 3;
+				
+				// Let ugly enter game
+				if (level == 1) {
+					ugly.speed = ugly.max_speed;
+					lazer.max_power += lazer.max_power;
+				}
+				
+				// Let grumpy enter game
+				if (level == 2) {
+					grumpy.speed = grumpy.max_speed;
+					lazer.max_power += lazer.max_power;
+				}
+				
+				// Make it harder forever
+				if (level > 3) {
+					monster.speed += 10;
+					ugly.speed += 10;
+					grumpy.speed += 10;
+				}
+			}
+			
+			spawnMonster(lazer.target);
 		}
 		
-	} else if (!lazer.on && lazer.power < 5) {
-		lazer.power += modifier
+	} else if (!lazer.on && lazer.power < lazer.max_power) {
+		lazer.power += modifier*lazer.replenish_rate;
 	}
 	
 };
@@ -282,22 +434,59 @@ var render = function () {
 		ctx.lineWidth=4;
 		ctx.beginPath();
 		ctx.moveTo(hero.x + 50, hero.y + 50);
-		ctx.lineTo(monster.x + 50, monster.y + 50);
+		ctx.lineTo(lazer.target.x + 50, lazer.target.y + 50);
 		ctx.stroke();
 		ctx.restore();
 		
-		// Draw Monster
-		if (monsterHitReady) {
-			drawMonster(monsterHit);
+		// Draw Target Monster
+		if (lazer.target == monster) {
+			if (monsterHitReady){
+				drawMonster(monsterHit, monster);
+			}
+		} else if (lazer.target == ugly) {
+			if (uglyHitReady){
+				drawMonster(uglyHit, ugly);
+			}
+		} else {
+			if (grumpyHitReady){
+				drawMonster(grumpyHit, grumpy);
+			}
 		}
 		
 	} else {
 		
-		// Draw Monster
-		if (monsterReady) {
-			drawMonster(monsterImage);
+		// Draw Target Monster
+		if (lazer.target == monster) {
+			if (monsterReady){
+				drawMonster(monsterImage, monster);
+			}
+		} else if (lazer.target == ugly) {
+			if (uglyReady){
+				drawMonster(uglyImage, ugly);
+			}
+		} else {
+			if (grumpyReady){
+				drawMonster(grumpyImage, grumpy);
+			}
 		}
 		
+	}
+	
+	// Draw remaining monsters
+	if (lazer.target != monster){
+		if (monsterReady) {
+			drawMonster(monsterImage, monster);
+		}
+	}
+	if (lazer.target != ugly){
+		if (uglyReady) {
+			drawMonster(uglyImage, ugly);
+		}
+	}
+	if (lazer.target != grumpy){
+		if (grumpyReady) {
+			drawMonster(grumpyImage, grumpy);
+		}
 	}
 	
 	// Draw Hero
@@ -335,6 +524,14 @@ var render = function () {
 	ctx.font = "300px Helvetica";
 	ctx.fillStyle = "white";
 	ctx.fillText("WIN", 50, 150);
+	ctx.restore();
+	
+	// Draw new level message
+	ctx.save();
+	ctx.globalAlpha = new_level/3;
+	ctx.font = "80px Helvetica";
+	ctx.fillStyle = "white";
+	ctx.fillText("Level " + level, 450, 10);
 	ctx.restore();
 	
 };

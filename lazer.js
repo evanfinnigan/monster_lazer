@@ -391,12 +391,14 @@ var update = function (modifier) {
 				if (level == 1) {
 					ugly.speed = ugly.max_speed;
 					lazer.max_power += lazer.max_power;
+					lazer.replenish_rate++;
 				}
 				
 				// Let grumpy enter game
 				if (level == 2) {
 					grumpy.speed = grumpy.max_speed;
 					lazer.max_power += lazer.max_power;
+					lazer.replenish_rate++;
 				}
 				
 				// Make it harder forever
@@ -404,6 +406,7 @@ var update = function (modifier) {
 					monster.speed += 10;
 					ugly.speed += 10;
 					grumpy.speed += 10;
+					lazer.replenish_rate++;
 				}
 			}
 			

@@ -243,6 +243,7 @@ var reset = function() {
 	
 	lazer.power = 5;
 
+	monster.speed = 100;
 	spawnMonster(monster);
 	remove(ugly);
 	remove(grumpy);

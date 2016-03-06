@@ -73,6 +73,7 @@ var lazer = {
 // Points
 var score = 0;
 var highscore = 0;
+var win_score = 10;
 
 var spawnMonster = function(monster) {
 	
@@ -251,7 +252,7 @@ var update = function (modifier) {
 		// Monster dies
 		if (monster.health <= 0) {
 			score++;
-			if (score == 25){
+			if (score == win_score){
 				win = 3;
 			}
 			spawnMonster(monster);
@@ -300,7 +301,7 @@ var render = function () {
 	}
 	
 	// Draw Hero
-	if (score < 25){
+	if (score < win_score){
 		if (heroReady) {
 			drawHero(heroImage);
 		}

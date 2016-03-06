@@ -11,6 +11,8 @@ document.body.appendChild(canvas);
 var bgReady = false;
 var bgImage = new Image();
 var dead = 0;
+var win = 0;
+
 bgImage.onload = function() {
 	bgReady = true;
 };
@@ -24,6 +26,14 @@ heroImage.onload = function() {
 	heroReady = true;
 };
 heroImage.src = "images/hero.png";
+
+// Champion image
+var championReady = false;
+var championImage = new Image();
+championImage.onload = function() {
+	championReady = true;
+};
+championImage.src = "images/champion.png";
 
 // Monster images
 
@@ -107,10 +117,10 @@ var drawMonster = function(img){
 	
 }
 
-var drawHero = function(){
+var drawHero = function(img){
 	
 	// Hero
-	ctx.drawImage(heroImage, hero.x, hero.y);
+	ctx.drawImage(img, hero.x, hero.y);
 	
 	// Lazer Power Level
 	ctx.save();
@@ -175,7 +185,7 @@ var update = function (modifier) {
 		}
 	}
 	if (65 in keysDown) { // player holding 'a'
-		// Only works if monster is one the screen
+		// Only works if a monster is one the screen
 		if (monster.x < canvas.width - 50
 			&& monster.y < canvas.height - 50
 			&& monster.x > -50
@@ -207,6 +217,13 @@ var update = function (modifier) {
 			dead = 0;
 		}
 	}
+	
+	if (win > 0) {
+		win -= 1*modifier;
+		if (win < 0){
+			win = 0;
+		}
+	}
 
 	// Are they touching? (Player Dies)
 	if (hero.x <= (monster.x + 32)
@@ -220,7 +237,7 @@ var update = function (modifier) {
 		
 		score = 0;
 		
-		dead = 1;
+		dead = 3;
 		
 		reset();
 	}
@@ -234,6 +251,9 @@ var update = function (modifier) {
 		// Monster dies
 		if (monster.health <= 0) {
 			score++;
+			if (score == 25){
+				win = 3;
+			}
 			spawnMonster(monster);
 		}
 		
@@ -280,8 +300,14 @@ var render = function () {
 	}
 	
 	// Draw Hero
-	if (heroReady) {
-		drawHero();
+	if (score < 25){
+		if (heroReady) {
+			drawHero(heroImage);
+		}
+	} else {
+		if (championReady) {
+			drawHero(championImage);
+		}
 	}
 	
 	// Score
@@ -296,9 +322,18 @@ var render = function () {
 	
 	// Draw death message
 	ctx.save();
-	ctx.globalAlpha = dead;
+	ctx.globalAlpha = dead/3;
 	ctx.font = "300px Helvetica";
+	ctx.fillStyle = "red";
 	ctx.fillText("DEAD", -20, 150);
+	ctx.restore();
+	
+	// Draw win message
+	ctx.save();
+	ctx.globalAlpha = win/3;
+	ctx.font = "300px Helvetica";
+	ctx.fillStyle = "white";
+	ctx.fillText("WIN", 50, 150);
 	ctx.restore();
 	
 };

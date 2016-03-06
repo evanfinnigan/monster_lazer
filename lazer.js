@@ -1,3 +1,9 @@
+/*
+*	MONSTER LAZER SHOOTER OF AWESOME
+*	Author: Evan Finnigan
+*	Created for QHacks 2016
+*/
+
 // Create the canvas
 
 var canvas = document.createElement("canvas");

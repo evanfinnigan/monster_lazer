@@ -1,4 +1,7 @@
 # Monster Lazer Shooter of Awesome
+
+Play it here: http://evanfinnigan.github.io/monster_lazer/
+
 A simple game based in Javascript
 
 ![Screenshot](http://i.imgur.com/k2m6qJS.png)

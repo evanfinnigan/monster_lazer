@@ -10,6 +10,10 @@ h3, p {
 	margin: 0
 }
 
+#grey {
+	color:grey;
+}
+
 body {
 	font-family:Consolas, Courier;
 	background-color:#1C1C1C;

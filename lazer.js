@@ -241,6 +241,8 @@ addEventListener("keyup", function (e) {
 	delete keysDown[e.keyCode];
 }, false);
 
+
+
 // Remove a monster from the game
 var remove = function(mnstr) {
 	mnstr.speed = 0;
@@ -302,8 +304,17 @@ var distance_squared = function(hro, mnstr) {
 	return (Math.pow(mnstr.x - hro.x, 2) + Math.pow(mnstr.y - hro.y, 2));
 };
 
+// Paused or Unpaused?
+var paused = false;
+
+
 // Update game objects
 var update = function (modifier) {
+	
+	// Pause Game
+	if (80 in keysDown) { // player pressed p
+		paused = true;
+	}
 	
 	// Player Motion Control
 	if (38 in keysDown) { // player holding up
@@ -331,21 +342,35 @@ var update = function (modifier) {
 		}
 	}
 	
-	// Choose lazer.lazer.lazer.lazer.lazer.lazer.target (closest monster)
+	// Choose lazer.target (closest monster)
 	var d1 = distance_squared(hero, monster);
 	var d2 = distance_squared(hero, ugly);
 	var d3 = distance_squared(hero, grumpy);
 	
-	if (d1 <= d2 && d1 <= d3) {
+	if (level == 0) {
 		lazer.target = monster;
-	} else if (d2 < d1 && d2 <= d3) {
-		lazer.target = ugly;
-	} else {
-		lazer.target = grumpy;
+	}
+	
+	if (level == 1) {
+		if (d1 < d2) {
+			lazer.target = monster;
+		} else {
+			lazer.target = ugly;
+		}
+	}
+	
+	if (level > 1) {
+		if (d1 < d2 && d1 < d3) {
+			lazer.target = monster;
+		} else if (d2 <= d1 && d2 < d3) {
+			lazer.target = ugly;
+		} else {
+			lazer.target = grumpy;
+		}
 	}
 	
 	// Fire Lazer 
-	if (65 in keysDown) { // player holding 'a'
+	if (65 in keysDown || 32 in keysDown) { // player holding 'a'
 		// Only works if a monster is one the screen
 		if (lazer.target.x < canvas.width - 50
 			&& lazer.target.y < canvas.height - 50
@@ -437,7 +462,7 @@ var update = function (modifier) {
 				}
 				
 				// Make it harder forever
-				if (level > 3) {
+				if (level >= 3) {
 					monster.speed += 10;
 					ugly.speed += 10;
 					grumpy.speed += 10;
@@ -577,11 +602,19 @@ var render = function () {
 // The main game loop
 var main = function () {
 	
-	var now = Date.now();
-	var delta = now - then;
+	// Unpause
+	if (79 in keysDown) { // player pressed p
+		paused = false;
+	}
 	
-	update(delta/1000);
-	render();
+	var now = Date.now();
+	
+	if (!paused) {
+		var delta = now - then;
+		
+		update(delta/1000);
+		render();
+	} 
 	
 	then=now;
 	

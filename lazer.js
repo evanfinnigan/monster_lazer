@@ -106,6 +106,8 @@ var hero = {
 // Monster
 var monster = {
 	speed: 100,
+	speedx: 0,
+	speedy: 0,
 	health: 2,
 	max_health: 2,
 	img: monsterImage,
@@ -118,6 +120,8 @@ var monster = {
 // Ugly
 var ugly = {
 	speed: 0,
+	speedx: 0,
+	speedy: 0,
 	max_speed: 110,
 	health: 3,
 	max_health: 3,
@@ -131,6 +135,8 @@ var ugly = {
 // Grumpy
 var grumpy = {
 	speed: 0,
+	speedx: 0,
+	speedy: 0,
 	max_speed: 120,
 	health: 4,
 	max_health: 4,
@@ -257,17 +263,39 @@ var reset = function() {
 
 // Controls Monster Movement towards player
 var move = function(mnstr, modifier) {
-	if (hero.x < mnstr.x){
-		mnstr.x -= modifier * mnstr.speed;
+	
+	// Make monster move in a straight line:
+	// 		The longest distance (x or y) will use the base speed.
+	//		The shortest distance (x or y) will use a slower, altered speed
+	//		The speed will be modified so the distance travelled in x to get to the player
+	//			should always take the same amount of time as distance travelled in y.
+	var dx = Math.abs(hero.x - mnstr.x);
+	var dy = Math.abs(hero.y - mnstr.y);
+	
+	if (dx > dy) {
+		mnstr.speedx = mnstr.speed;
+		mnstr.speedy = mnstr.speed * (dy/dx);
+	} else if (dx < dy) {
+		mnstr.speedy = mnstr.speed;
+		mnstr.speedx = mnstr.speed * (dx/dy);
 	} else {
-		mnstr.x += modifier * mnstr.speed;
+		mnstr.speedx = mnstr.speed;
+		mnstr.speedy = mnstr.speed;
 	}
 	
-	if (hero.y < mnstr.y){
-		mnstr.y -= modifier * mnstr.speed;
-	} else {
-		mnstr.y += modifier * mnstr.speed;
+	// x movement
+	if ((mnstr.x - hero.x) > 1){
+		mnstr.x -= modifier * mnstr.speedx;
+	} else if ((hero.x - mnstr.x) > 1){
+		mnstr.x += modifier * mnstr.speedx;
 	}
+	
+	// y movement
+	if ((mnstr.y - hero.y) > 1){
+		mnstr.y -= modifier * mnstr.speedy;
+	} else if ((hero.y - mnstr.y) > 1) {
+		mnstr.y += modifier * mnstr.speedy;
+	} 
 };
 
 var distance_squared = function(hro, mnstr) {

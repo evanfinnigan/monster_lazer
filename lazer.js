@@ -105,11 +105,11 @@ var hero = {
 
 // Monster
 var monster = {
-	speed: 100,
+	speed: 50,
 	speedx: 0,
 	speedy: 0,
-	health: 2,
-	max_health: 2,
+	health: 1,
+	max_health: 1,
 	img: monsterImage,
 	img_ready: monsterReady,
 	img_hit: monsterHit,
@@ -122,9 +122,9 @@ var ugly = {
 	speed: 0,
 	speedx: 0,
 	speedy: 0,
-	max_speed: 110,
-	health: 3,
-	max_health: 3,
+	max_speed: 30,
+	health: 4,
+	max_health: 4,
 	img: uglyImage,
 	img_ready: uglyReady,
 	img_hit: uglyHit,
@@ -137,9 +137,9 @@ var grumpy = {
 	speed: 0,
 	speedx: 0,
 	speedy: 0,
-	max_speed: 120,
-	health: 4,
-	max_health: 4,
+	max_speed: 10,
+	health: 7,
+	max_health: 7,
 	img: grumpyImage,
 	img_ready: grumpyReady,
 	img_hit: grumpyHit,
@@ -160,11 +160,12 @@ var lazer = {
 // Points
 var score = 0;
 var highscore = 0;
-var win_score = 12;
+var win_level = 19;
 var level = 0;
 
 var dead = 0;
 var win = 0;
+var bg = 3;
 var new_level = 3;
 
 var spawnMonster = function(mnstr) {
@@ -304,9 +305,17 @@ var distance_squared = function(hro, mnstr) {
 	return (Math.pow(mnstr.x - hro.x, 2) + Math.pow(mnstr.y - hro.y, 2));
 };
 
+var change_background = function(new_background){
+	bg = 0;
+	bgImage.src = new_background;
+};
+
 // Paused or Unpaused?
 var paused = false;
 
+// Number of kills
+var kills = 0;
+var next_level = 10;
 
 // Update game objects
 var update = function (modifier) {
@@ -409,6 +418,13 @@ var update = function (modifier) {
 			new_level = 0;
 		}
 	}
+	
+	if (bg < 3) {
+		bg += 1*modifier;
+		if (bg > 3){
+			bg = 3;
+		}
+	}
 
 	// Are they touching? (Player Dies)
 	if (hero.x <= (lazer.target.x + 32)
@@ -419,6 +435,8 @@ var update = function (modifier) {
 		if (score > highscore) {
 			highscore = score;
 		}
+		
+		change_background("images/cave.png");
 		
 		score = 0;
 		level = 0;
@@ -431,43 +449,74 @@ var update = function (modifier) {
 		reset();
 	}
 	
+	
 	if (lazer.on && lazer.power > 0) {
 		
 		lazer.power -= 3*modifier;
 		
 		lazer.target.health -= 2*modifier;
 		
+		score += Math.round(100*modifier);
+		
 		// Monster dies
 		if (lazer.target.health <= 0) {
-			score++;
-			if (score == win_score){
+			
+			kills += lazer.target.max_health;
+			
+			if (level == win_level){
 				win = 3;
 			}
-			if (score % 4 == 0) {
+			if (kills >= next_level) {
 				level++;
+				next_level = kills + level + 10;
 				new_level = 3;
 				
 				// Let ugly enter game
 				if (level == 1) {
 					ugly.speed = ugly.max_speed;
 					lazer.max_power += lazer.max_power;
-					lazer.replenish_rate++;
 				}
 				
 				// Let grumpy enter game
 				if (level == 2) {
 					grumpy.speed = grumpy.max_speed;
 					lazer.max_power += lazer.max_power;
-					lazer.replenish_rate++;
 				}
 				
-				// Make it harder forever
-				if (level >= 3) {
-					monster.speed += 10;
-					ugly.speed += 10;
-					grumpy.speed += 10;
-					lazer.replenish_rate++;
+				monster.speed += 5;
+				
+				if (level >= 1){
+					ugly.speed += 5;
+					ugly.max_speed += 5;
 				}
+				
+				if (level >= 2){
+					grumpy.speed += 5;
+					grumpy.max_speed += 5;
+				}
+				
+				switch(level) {
+					case 3:
+						change_background("images/hell.png");
+						break;
+					case 7:
+						change_background("images/orange.png");
+						break;
+					case 11:
+						change_background("images/water.png");
+						break;
+					case 15:
+						change_background("images/grass.png");
+						break;
+					case 19:
+						change_background("images/gold.png");
+						break;
+					default:
+						break;
+				}
+				
+				lazer.replenish_rate++;
+				
 			}
 			
 			spawnMonster(lazer.target);
@@ -483,7 +532,10 @@ var render = function () {
 	
 	// Draw Background
 	if (bgReady) {
+		ctx.save();
+		ctx.globalAlpha = bg/3;
 		ctx.drawImage(bgImage, 0, 0);
+		ctx.restore();
 	}
 	
 	// Draw Lazer Beam
@@ -553,7 +605,7 @@ var render = function () {
 	}
 	
 	// Draw Hero
-	if (score < win_score){
+	if (level < win_level){
 		if (heroReady) {
 			drawHero(heroImage);
 		}
@@ -568,7 +620,7 @@ var render = function () {
 	ctx.font = "24px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Score: " + score + "    High Score: " + highscore, 32, 32);
+	ctx.fillText("Score: " + score + "     High Score: " + highscore + "     Level: " + (level+1), 32, 32);
 	
 	// Lazer Power
 	ctx.fillText("Power:", 32, (600 - 32));
@@ -594,7 +646,7 @@ var render = function () {
 	ctx.globalAlpha = new_level/3;
 	ctx.font = "80px Helvetica";
 	ctx.fillStyle = "white";
-	ctx.fillText("Level " + level, 450, 10);
+	ctx.fillText("Level " + (level+1), 280, 100);
 	ctx.restore();
 	
 };

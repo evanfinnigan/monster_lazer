@@ -485,14 +485,12 @@ var update = function (modifier) {
 				
 				monster.speed += 5;
 				
-				if (level >= 1){
+				if (level > 1) {
 					ugly.speed += 5;
-					ugly.max_speed += 5;
 				}
 				
-				if (level >= 2){
+				if (level > 2) {
 					grumpy.speed += 5;
-					grumpy.max_speed += 5;
 				}
 				
 				switch(level) {

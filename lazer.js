@@ -22,6 +22,16 @@ bgImage.onload = function() {
 bgImage.src = "images/cave.png";
 
 
+// Power Meter
+
+var powerReady = false;
+var powerImage = new Image();
+powerImage.onload = function() {
+	powerReady = true;
+};
+powerImage.src = "images/power_meter.png";
+
+
 // Hero image
 
 var heroReady = false;
@@ -108,8 +118,8 @@ var monster = {
 	speed: 50,
 	speedx: 0,
 	speedy: 0,
-	health: 1,
-	max_health: 1,
+	health: 2,
+	max_health: 2,
 	img: monsterImage,
 	img_ready: monsterReady,
 	img_hit: monsterHit,
@@ -122,9 +132,9 @@ var ugly = {
 	speed: 0,
 	speedx: 0,
 	speedy: 0,
-	max_speed: 30,
-	health: 4,
-	max_health: 4,
+	max_speed: 40,
+	health: 5,
+	max_health: 5,
 	img: uglyImage,
 	img_ready: uglyReady,
 	img_hit: uglyHit,
@@ -137,9 +147,9 @@ var grumpy = {
 	speed: 0,
 	speedx: 0,
 	speedy: 0,
-	max_speed: 10,
-	health: 7,
-	max_health: 7,
+	max_speed: 30,
+	health: 8,
+	max_health: 8,
 	img: grumpyImage,
 	img_ready: grumpyReady,
 	img_hit: grumpyHit,
@@ -152,7 +162,7 @@ var lazer = {
 	on: false,
 	max_power: 5,
 	power: 5,
-	replenish_rate: 1,
+	replenish_rate: 1.0,
 	target: monster
 };
 
@@ -174,20 +184,22 @@ var spawnMonster = function(mnstr) {
 	lazer.on = false;
 	
 	var pickWall = Math.random();
+	
+	var spawn_distance = (level*10*mnstr.speed*Math.random())/(mnstr.max_health*mnstr.max_health)
 			
 	// Throw new monster somewhere just off the screen randomly
 	if (pickWall < 0.25) {
-		mnstr.x = -100;
+		mnstr.x = -100 - spawn_distance;
 		mnstr.y = Math.random()*canvas.height;
 	} else if (pickWall < 0.5) {
 		mnstr.x = Math.random()*canvas.width;
-		mnstr.y = -100;
+		mnstr.y = -100 - spawn_distance;
 	} else if (pickWall < 0.75) {
-		mnstr.x = canvas.width + 100;
+		mnstr.x = canvas.width + 100 + spawn_distance;
 		mnstr.y = Math.random()*canvas.height;
 	} else {
 		mnstr.x = Math.random()*canvas.width;
-		mnstr.y = canvas.height + 100;
+		mnstr.y = canvas.height + 100 + spawn_distance;
 	}
 					
 	mnstr.health = mnstr.max_health;
@@ -358,33 +370,42 @@ var update = function (modifier) {
 	
 	if (level == 0) {
 		lazer.target = monster;
-	}
-	
-	if (level == 1) {
-		if (d1 < d2) {
-			lazer.target = monster;
-		} else {
-			lazer.target = ugly;
+	} else if (level == 1) {
+		switch (Math.min(d1, d2)) {
+			case d1:
+				lazer.target = monster;
+				break;
+			case d2:
+				lazer.target = ugly;
+				break;
+			default:
+				lazer.target = monster;
+				break;
 		}
-	}
-	
-	if (level > 1) {
-		if (d1 < d2 && d1 < d3) {
-			lazer.target = monster;
-		} else if (d2 <= d1 && d2 < d3) {
-			lazer.target = ugly;
-		} else {
-			lazer.target = grumpy;
+	} else {
+		switch (Math.min(d1, d2, d3)) {
+			case d1:
+				lazer.target = monster;
+				break;
+			case d2:
+				lazer.target = ugly;
+				break;
+			case d3:
+				lazer.target = grumpy;
+				break;
+			default:
+				lazer.target = monster;
+				break;
 		}
 	}
 	
 	// Fire Lazer 
 	if (65 in keysDown || 32 in keysDown) { // player holding 'a'
 		// Only works if a monster is one the screen
-		if (lazer.target.x < canvas.width - 50
-			&& lazer.target.y < canvas.height - 50
-			&& lazer.target.x > -50
-			&& lazer.target.y > -50){
+		if (lazer.target.x < canvas.width - 20
+			&& lazer.target.y < canvas.height - 20
+			&& lazer.target.x > -80
+			&& lazer.target.y > -80){
 			// Attack
 			lazer.on = true;
 		} else {
@@ -441,7 +462,7 @@ var update = function (modifier) {
 		score = 0;
 		level = 0;
 		new_level = 3;
-		lazer.replenish_rate = 1;
+		lazer.replenish_rate = 1.0;
 		lazer.max_power = 5;
 		
 		dead = 3;
@@ -483,14 +504,14 @@ var update = function (modifier) {
 					lazer.max_power += lazer.max_power;
 				}
 				
-				monster.speed += 5;
+				monster.speed += 10;
 				
 				if (level > 1) {
-					ugly.speed += 5;
+					ugly.speed += 10;
 				}
 				
 				if (level > 2) {
-					grumpy.speed += 5;
+					grumpy.speed += 10;
 				}
 				
 				switch(level) {
@@ -513,7 +534,7 @@ var update = function (modifier) {
 						break;
 				}
 				
-				lazer.replenish_rate++;
+				lazer.replenish_rate += 0.2;
 				
 			}
 			

@@ -24,12 +24,14 @@ bgImage.src = "images/cave.png";
 
 // Power Meter
 
+/*
 var powerReady = false;
 var powerImage = new Image();
 powerImage.onload = function() {
 	powerReady = true;
 };
 powerImage.src = "images/power_meter.png";
+*/
 
 
 // Hero image
@@ -514,7 +516,7 @@ var update = function (modifier) {
 					grumpy.speed += 10;
 				}
 				
-				switch(level) {
+				/*switch(level) {
 					case 3:
 						change_background("images/hell.png");
 						break;
@@ -532,7 +534,7 @@ var update = function (modifier) {
 						break;
 					default:
 						break;
-				}
+				}*/
 				
 				lazer.replenish_rate += 0.2;
 				

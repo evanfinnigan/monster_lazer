@@ -24,14 +24,19 @@ bgImage.src = "images/cave.png";
 
 // Power Meter
 
-/*
-var powerReady = false;
-var powerImage = new Image();
-powerImage.onload = function() {
-	powerReady = true;
+var powerBackgroundReady = false;
+var powerBackgroundImage = new Image();
+powerBackgroundImage.onload = function() {
+	powerBackgroundReady = true;
 };
-powerImage.src = "images/power_meter.png";
-*/
+powerBackgroundImage.src = "images/power_bg.png";
+
+var powerForegroundReady = false;
+var powerForegroundImage = new Image();
+powerForegroundImage.onload = function() {
+	powerForegroundReady = true;
+};
+powerForegroundImage.src = "images/power_fg.png";
 
 
 // Hero image
@@ -227,22 +232,33 @@ var drawMonster = function(img, mnstr){
 }
 
 var drawHero = function(img){
-	
 	// Hero
 	ctx.drawImage(img, hero.x, hero.y);
+}
+
+var drawPower = function(){
+	
+	//  Power Background Image
+	if (powerBackgroundReady){
+		ctx.drawImage(powerBackgroundImage, 0, 574);
+	}
 	
 	// Lazer Power Level
 	ctx.save();
 	
-	ctx.strokeStyle='red';
-	ctx.lineWidth=20;
+	ctx.strokeStyle='blue';
+	ctx.lineWidth=23;
 	ctx.beginPath();
-	ctx.moveTo(110, (600 - 20));
-	ctx.lineTo(110 + 20*lazer.power, (600 - 20));
+	ctx.moveTo(0, 586);
+	ctx.lineTo(0 + 20*lazer.power, 586);
 	ctx.stroke();
 	
 	ctx.restore();
 	
+	// Power Foreground Image
+	if (powerForegroundReady){
+		ctx.drawImage(powerForegroundImage, 0, 574);
+	}
 }
 
 // Handle keyboard controls
@@ -636,15 +652,15 @@ var render = function () {
 		}
 	}
 	
+	// Draw Power bar
+	drawPower();
+	
 	// Score
 	ctx.fillStyle = "rgb(250,250,250)";
 	ctx.font = "24px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
 	ctx.fillText("Score: " + score + "     High Score: " + highscore + "     Level: " + (level+1), 32, 32);
-	
-	// Lazer Power
-	ctx.fillText("Power:", 32, (600 - 32));
 	
 	// Draw death message
 	ctx.save();

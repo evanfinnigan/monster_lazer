@@ -179,6 +179,13 @@ var score = 0;
 var highscore = 0;
 var win_level = 19;
 var level = 0;
+var highest_level = 0;
+
+// Number of kills
+var kill_points = 0;
+var kills = 0;
+var mostkills = 0;
+var next_level = 10;
 
 var dead = 0;
 var win = 0;
@@ -287,6 +294,17 @@ var reset = function() {
 	hero.y = (canvas.height / 2) - 50;
 	
 	lazer.power = 5;
+	lazer.replenish_rate = 1.0;
+	lazer.max_power = 5;
+	
+	score = 0;
+	level = 0;
+	kills = 0;
+	kill_points = 0;
+	
+	next_level = 10;
+	
+	new_level = 3;
 
 	monster.speed = 100;
 	spawnMonster(monster);
@@ -342,10 +360,6 @@ var change_background = function(new_background){
 
 // Paused or Unpaused?
 var paused = false;
-
-// Number of kills
-var kills = 0;
-var next_level = 10;
 
 // Update game objects
 var update = function (modifier) {
@@ -475,13 +489,11 @@ var update = function (modifier) {
 			highscore = score;
 		}
 		
-		change_background("images/cave.png");
+		if (level > highest_level) {
+			highest_level = level;
+		}
 		
-		score = 0;
-		level = 0;
-		new_level = 3;
-		lazer.replenish_rate = 1.0;
-		lazer.max_power = 5;
+		//change_background("images/cave.png");
 		
 		dead = 3;
 		
@@ -500,14 +512,15 @@ var update = function (modifier) {
 		// Monster dies
 		if (lazer.target.health <= 0) {
 			
-			kills += lazer.target.max_health;
+			kills++;
+			kill_points += lazer.target.max_health;
 			
 			if (level == win_level){
 				win = 3;
 			}
-			if (kills >= next_level) {
+			if (kill_points >= next_level) {
 				level++;
-				next_level = kills + level + 10;
+				next_level = kill_points + level + 10;
 				new_level = 3;
 				
 				// Let ugly enter game
@@ -655,12 +668,24 @@ var render = function () {
 	// Draw Power bar
 	drawPower();
 	
-	// Score
+	// Score stuff
 	ctx.fillStyle = "rgb(250,250,250)";
-	ctx.font = "24px Helvetica";
+	ctx.font = "24px Monospace";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Score: " + score + "     High Score: " + highscore + "     Level: " + (level+1), 32, 32);
+	
+	// Categories
+	ctx.fillText("          Score       Kills       Level", 10, 10);
+	
+	// Score
+	ctx.fillText("Current:   " + score, 10, 40);
+	ctx.fillText("" + kills, 340, 40);
+	ctx.fillText("" + (level+1), 515, 40);
+	
+	// High Scores
+	ctx.fillText("Best:      " + highscore, 10, 70);
+	ctx.fillText("" + mostkills, 340, 70);
+	ctx.fillText("" + (highest_level+1), 515, 70);
 	
 	// Draw death message
 	ctx.save();

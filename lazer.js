@@ -598,21 +598,21 @@ var update = function (modifier) {
 		
 	}
 	
-	if (lazer.target != monster || !lazer.on || lazer.power == 0){
+	if (lazer.target != monster || !lazer.on || lazer.power <= 0){
 		monster.hit -= modifier*3;
 		if (monster.hit < 0){
 			monster.hit = 0;
 		}
 	}
 	
-	if (lazer.target != ugly || !lazer.on || lazer.power == 0){
+	if (lazer.target != ugly || !lazer.on || lazer.power <= 0){
 		ugly.hit -= modifier*3;
 		if (ugly.hit < 0){
 			ugly.hit = 0;
 		}
 	}
 	
-	if (lazer.target != grumpy || !lazer.on || lazer.power == 0){
+	if (lazer.target != grumpy || !lazer.on || lazer.power <= 0){
 		grumpy.hit -= modifier*3;
 		if (grumpy.hit < 0){
 			grumpy.hit = 0;

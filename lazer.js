@@ -688,15 +688,15 @@ var render = function () {
 	// Draw death message
 	ctx.save();
 	ctx.globalAlpha = dead/3;
-	ctx.font = "300px Helvetica";
+	ctx.font = "350px Monospace";
 	ctx.fillStyle = "red";
-	ctx.fillText("DEAD", -20, 150);
+	ctx.fillText("DEAD", -25, 150);
 	ctx.restore();
 	
 	// Draw win message
 	ctx.save();
 	ctx.globalAlpha = win/3;
-	ctx.font = "300px Helvetica";
+	ctx.font = "300px Monospace";
 	ctx.fillStyle = "white";
 	ctx.fillText("WIN", 50, 150);
 	ctx.restore();
@@ -704,7 +704,7 @@ var render = function () {
 	// Draw new level message
 	ctx.save();
 	ctx.globalAlpha = new_level/3;
-	ctx.font = "80px Helvetica";
+	ctx.font = "80px Monospace";
 	ctx.fillStyle = "white";
 	ctx.fillText("Level " + (level+1), 280, 100);
 	ctx.restore();

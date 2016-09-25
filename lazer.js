@@ -111,6 +111,22 @@ grumpyHit.onload = function() {
 };
 grumpyHit.src = "images/grumpy_hit.png";
 
+// Mine images
+
+var mineReady = false;
+var mineImage = new Image();
+mineImage.onload = function() {
+	mineReady = true;
+}
+mineImage.src = "images/mine.png";
+
+var explodeReady = false;
+var explodeImage = new Image();
+explodeImage.onload = function() {
+	explodeReady = true;
+}
+explodeImage.src = "images/explosion.png";
+
 
 // Game Objects
 
@@ -140,7 +156,7 @@ var ugly = {
 	speed: 0,
 	speedx: 0,
 	speedy: 0,
-	max_speed: 40,
+	starting_speed: 40,
 	health: 5,
 	max_health: 5,
 	hit: 0,
@@ -156,7 +172,7 @@ var grumpy = {
 	speed: 0,
 	speedx: 0,
 	speedy: 0,
-	max_speed: 30,
+	starting_speed: 30,
 	health: 8,
 	max_health: 8,
 	hit: 0,
@@ -176,6 +192,19 @@ var lazer = {
 	target: monster
 };
 
+// Mine
+var mine = {
+	x: 0,
+	y: 0,
+	alpha: 0,
+	ready: true,
+	exploding: false,
+	countdown: false,
+	radius: 150,
+	damage: 1000,
+	time: 3.0
+}
+
 
 // Points
 var score = 0;
@@ -194,6 +223,46 @@ var dead = 0;
 var win = 0;
 var bg = 3;
 var new_level = 3;
+
+
+// Reset when the player dies
+var reset = function() {
+	
+	mine.alpha = 0;
+	mine.exploding = false;
+	mine.countdown = false;
+	mine.ready = true;
+	
+	if (score > highscore) {
+		highscore = score;
+	}
+	
+	if (level > highest_level) {
+		highest_level = level;
+	}
+	
+	hero.x = (canvas.width / 2) - 50;
+	hero.y = (canvas.height / 2) - 50;
+	
+	lazer.power = 5;
+	lazer.replenish_rate = 1.0;
+	lazer.max_power = 5;
+	
+	score = 0;
+	level = 0;
+	kills = 0;
+	kill_points = 0;
+	
+	next_level = 10;
+	
+	new_level = 3;
+
+	monster.speed = 100;
+	spawnMonster(monster);
+	remove(ugly);
+	remove(grumpy);
+};
+
 
 var spawnMonster = function(mnstr) {
 	
@@ -282,6 +351,23 @@ var drawPower = function(){
 	}
 }
 
+var drawMine = function(){
+	
+	ctx.save();
+	
+	ctx.globalAlpha = mine.alpha;
+	
+	if (mineReady && mine.countdown) {
+		ctx.drawImage(mineImage, mine.x, mine.y);
+	}
+
+	if (explodeReady && mine.exploding) {
+		ctx.drawImage(explodeImage, mine.x, mine.y);
+	}
+
+	ctx.restore();
+}
+
 // Handle keyboard controls
 var keysDown = {};
 
@@ -294,37 +380,77 @@ addEventListener("keyup", function (e) {
 }, false);
 
 
-
 // Remove a monster from the game
 var remove = function(mnstr) {
 	mnstr.speed = 0;
 	spawnMonster(mnstr);
 };
 
-// Reset when the player dies
-var reset = function() {
+// Mine Damage on a monster
+var mine_damage = function(mnstr) {
 	
-	hero.x = (canvas.width / 2) - 50;
-	hero.y = (canvas.height / 2) - 50;
+	var d = Math.sqrt(distance_squared(mine, mnstr));
+	// monster is completely safe at mine.radius px away
+	if (d < mine.radius && mine.alpha >= 0.0){
+		mnstr.health -= Math.abs(mine.damage*mine.alpha*(1/((d*d) + 1)));
+	}
 	
-	lazer.power = 5;
-	lazer.replenish_rate = 1.0;
-	lazer.max_power = 5;
+	if (mnstr.health <= 0) {
+		kill_monster(mnstr);
+	}
 	
-	score = 0;
-	level = 0;
-	kills = 0;
-	kill_points = 0;
-	
-	next_level = 10;
-	
-	new_level = 3;
-
-	monster.speed = 100;
-	spawnMonster(monster);
-	remove(ugly);
-	remove(grumpy);
 };
+
+
+// Monster dies
+var kill_monster = function(mnstr) {
+	
+	kills++;
+	kill_points += mnstr.max_health;
+	mnstr.hit = 0;
+	
+	if (level == win_level){
+		win = 3;
+	}
+	if (kill_points >= next_level) {
+		level_up();
+	}
+	
+	spawnMonster(mnstr);
+}
+
+
+// Level up function
+var level_up = function(){
+	
+	level++;
+	next_level = kill_points + level + 10;
+	new_level = 3;
+	
+	// Let ugly enter game
+	if (level == 1) {
+		ugly.speed = ugly.starting_speed;
+		lazer.max_power += lazer.max_power;
+	}
+	
+	// Let grumpy enter game
+	if (level == 2) {
+		grumpy.speed = grumpy.starting_speed;
+		lazer.max_power += lazer.max_power;
+	}
+	
+	monster.speed += 10;
+	
+	if (level > 1) {
+		ugly.speed += 10;
+	}
+	
+	if (level > 2) {
+		grumpy.speed += 10;
+	}
+	
+	lazer.replenish_rate += 0.2;
+}
 
 // Controls Monster Movement towards player
 var move = function(mnstr, modifier) {
@@ -406,6 +532,51 @@ var update = function (modifier) {
 		hero.x += hero.speed * modifier;
 		if (hero.x > canvas.width - 68) {
 			hero.x = canvas.width - 68;
+		}
+	}
+	
+	// Drop mine with 'b' key
+	if (mine.ready && 66 in keysDown) {
+		mine.x = hero.x;
+		mine.y = hero.y;
+		mine.countdown = true;
+		mine.ready = false;
+		mine.alpha = 1.0;
+	}
+	
+	// explosion countdown
+	if (mine.countdown) {
+		mine.alpha = 0.99;
+		
+		ctx.fillText("" + Math.ceil(mine.time), mine.x + 100, mine.y + 50);
+		
+		mine.time -= modifier;
+		if (mine.time <= 0) {
+			mine.countdown = false;
+			mine.exploding = true;
+			mine.time = 3.0;
+		}
+		
+	}
+	
+	// boom
+	if (mine.exploding) {
+		
+		mine_damage(monster);
+		mine_damage(ugly);
+		mine_damage(grumpy);
+		
+		// Mine might kill hero :(
+		if (distance_squared(hero, mine) < 2000) {
+			dead = 3;
+			reset();
+		}
+		
+		mine.alpha -= modifier;
+		if (mine.alpha <= 0){
+			mine.alpha = 0;
+			mine.exploding = false;
+			mine.ready = true;
 		}
 	}
 	
@@ -499,16 +670,6 @@ var update = function (modifier) {
 		&& hero.y <= (lazer.target.y + 32)
 		&& lazer.target.y <= (hero.y + 32)) {
 		
-		if (score > highscore) {
-			highscore = score;
-		}
-		
-		if (level > highest_level) {
-			highest_level = level;
-		}
-		
-		//change_background("images/cave.png");
-		
 		dead = 3;
 		
 		reset();
@@ -523,6 +684,7 @@ var update = function (modifier) {
 		
 		score += Math.round(100*modifier);
 		
+		// fade between images
 		lazer.target.hit += 5*modifier;
 		if (lazer.target.hit > 1){
 			lazer.target.hit = 1;
@@ -530,66 +692,7 @@ var update = function (modifier) {
 		
 		// Monster dies
 		if (lazer.target.health <= 0) {
-			
-			kills++;
-			kill_points += lazer.target.max_health;
-			lazer.target.hit = 0;
-			
-			if (level == win_level){
-				win = 3;
-			}
-			if (kill_points >= next_level) {
-				level++;
-				next_level = kill_points + level + 10;
-				new_level = 3;
-				
-				// Let ugly enter game
-				if (level == 1) {
-					ugly.speed = ugly.max_speed;
-					lazer.max_power += lazer.max_power;
-				}
-				
-				// Let grumpy enter game
-				if (level == 2) {
-					grumpy.speed = grumpy.max_speed;
-					lazer.max_power += lazer.max_power;
-				}
-				
-				monster.speed += 10;
-				
-				if (level > 1) {
-					ugly.speed += 10;
-				}
-				
-				if (level > 2) {
-					grumpy.speed += 10;
-				}
-				
-				/*switch(level) {
-					case 3:
-						change_background("images/hell.png");
-						break;
-					case 7:
-						change_background("images/orange.png");
-						break;
-					case 11:
-						change_background("images/water.png");
-						break;
-					case 15:
-						change_background("images/grass.png");
-						break;
-					case 19:
-						change_background("images/gold.png");
-						break;
-					default:
-						break;
-				}*/
-				
-				lazer.replenish_rate += 0.2;
-				
-			}
-			
-			spawnMonster(lazer.target);
+			kill_monster(lazer.target);
 		}
 		
 	} else if (!lazer.on && lazer.power < lazer.max_power) {
@@ -646,6 +749,9 @@ var render = function () {
 		ctx.stroke();
 		ctx.restore();
 	} 
+	
+	// Draw mine
+	drawMine();
 	
 	// Draw Monsters
 	drawMonster(monster);

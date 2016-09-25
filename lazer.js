@@ -359,6 +359,8 @@ var drawMine = function(){
 	
 	if (mineReady && mine.countdown) {
 		ctx.drawImage(mineImage, mine.x, mine.y);
+		ctx.font = "30px Monospace";
+		ctx.fillText("" + Math.ceil(mine.time), mine.x + 90, mine.y + 40);
 	}
 
 	if (explodeReady && mine.exploding) {
@@ -547,8 +549,6 @@ var update = function (modifier) {
 	// explosion countdown
 	if (mine.countdown) {
 		mine.alpha = 0.99;
-		
-		ctx.fillText("" + Math.ceil(mine.time), mine.x + 100, mine.y + 50);
 		
 		mine.time -= modifier;
 		if (mine.time <= 0) {

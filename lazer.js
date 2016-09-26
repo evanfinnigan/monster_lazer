@@ -567,12 +567,12 @@ var update = function (modifier) {
 		mine_damage(grumpy);
 		
 		// Mine might kill hero :(
-		if (distance_squared(hero, mine) < 2000) {
+		if (distance_squared(hero, mine) < 2000 && mine.alpha > 0.5) {
 			dead = 3;
 			reset();
 		}
 		
-		mine.alpha -= modifier;
+		mine.alpha -= 2*modifier;
 		if (mine.alpha <= 0){
 			mine.alpha = 0;
 			mine.exploding = false;

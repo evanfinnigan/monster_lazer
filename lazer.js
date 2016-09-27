@@ -78,13 +78,6 @@ monsterImage.onload = function() {
 };
 monsterImage.src = "images/monster_sprite.png";
 
-/*var monsterHitReady = false;
-var monsterHit = new Image();
-monsterHit.onload = function() {
-	monsterHitReady = true;
-};
-monsterHit.src = "images/monster_hit.png";*/
-
 
 // Second Monster
 
@@ -94,13 +87,6 @@ uglyImage.onload = function() {
 	uglyReady = true;
 };
 uglyImage.src = "images/ugly_sprite.png";
-
-/*var uglyHitReady = false;
-var uglyHit = new Image();
-uglyHit.onload = function() {
-	uglyHitReady = true;
-};
-uglyHit.src = "images/ugly_hit.png";*/
 
 
 // Third Monster
@@ -112,12 +98,6 @@ grumpyImage.onload = function() {
 };
 grumpyImage.src = "images/grumpy_sprite.png";
 
-/*var grumpyHitReady = false;
-var grumpyHit = new Image();
-grumpyHit.onload = function() {
-	grumpyHitReady = true;
-};
-grumpyHit.src = "images/grumpy_hit.png";*/
 
 // Mine images
 
@@ -141,24 +121,7 @@ var drawFrame = function(mnstr, frameno, x, y, a) {
 	
 	ctx.save();
 	
-	// Fadeout for death animation
-	switch(frameno) {
-		case 6:
-			ctx.globalAlpha = 0.8;
-			break;
-		case 7:
-			ctx.globalAlpha = 0.6;
-			break;
-		case 8:
-			ctx.globalAlpha = 0.4;
-			break;
-		case 9:
-			ctx.globalAlpha = 0.2;
-			break;
-		default:
-			ctx.globalAlpha = a;
-			break;
-	}
+	ctx.globalAlpha = a;
 	
 	ctx.drawImage(mnstr.img, (100*frameno), 0, mnstr.width, mnstr.height, x, y, mnstr.width, mnstr.height);
 	
@@ -187,7 +150,8 @@ var monster = {
 	height: 100,
 	deathFrames: 0,
 	deathx: 0,
-	deathy: 0
+	deathy: 0,
+	deathAlpha: 1.0
 };
 
 
@@ -205,7 +169,8 @@ var ugly = {
 	height: 100,
 	deathFrames: 0,
 	deathx: 0,
-	deathy: 0
+	deathy: 0,
+	deathAlpha: 1.0
 };
 
 
@@ -223,7 +188,8 @@ var grumpy = {
 	height: 100, 
 	deathFrames: 0,
 	deathx: 0,
-	deathy: 0
+	deathy: 0,
+	deathAlpha: 1.0
 };
 
 
@@ -828,12 +794,14 @@ var render = function (modifier) {
 	if (monsterReady) {
 		drawMonster(monster);
 		if (monster.deathFrames > 0) {
-			drawFrame(monster, monster.deathFrames, monster.deathx, monster.deathy, 1.0);
+			drawFrame(monster, monster.deathFrames, monster.deathx, monster.deathy, monster.deathAlpha);
+			monster.deathAlpha -= 3*modifier;
 			if (next_frame){
 				monster.deathFrames++;
 			}
 			if (monster.deathFrames == 10){
 				monster.deathFrames = 0;
+				monster.deathAlpha = 1.0;
 			}
 		}
 	}
@@ -841,12 +809,17 @@ var render = function (modifier) {
 	if (uglyReady) {
 		drawMonster(ugly);
 		if (ugly.deathFrames > 0) {
-			drawFrame(ugly, ugly.deathFrames, ugly.deathx, ugly.deathy, 1.0);
+			drawFrame(ugly, ugly.deathFrames, ugly.deathx, ugly.deathy, ugly.deathAlpha);
+			ugly.deathAlpha -= 3*modifier;
+			if (ugly.deathAlpha <= 0) {
+				ugly.deathAlpha = 0;
+			}
 			if (next_frame){
 				ugly.deathFrames++;
 			}
 			if (ugly.deathFrames == 10){
 				ugly.deathFrames = 0;
+				ugly.deathAlpha = 1.0;
 			}
 		}
 	}
@@ -854,12 +827,17 @@ var render = function (modifier) {
 	if (grumpyReady) {
 		drawMonster(grumpy);
 		if (grumpy.deathFrames > 0) {
-			drawFrame(grumpy, grumpy.deathFrames, grumpy.deathx, grumpy.deathy, 1.0);
+			drawFrame(grumpy, grumpy.deathFrames, grumpy.deathx, grumpy.deathy, grumpy.deathAlpha);
+			grumpy.deathAlpha -= 3*modifier;
+			if (grumpy.deathAlpha <= 0) {
+				grumpy.deathAlpha = 0;
+			}
 			if (next_frame){
 				grumpy.deathFrames++;
 			}
 			if (grumpy.deathFrames == 10){
 				grumpy.deathFrames = 0;
+				grumpy.deathAlpha = 1.0;
 			}
 		}
 	}

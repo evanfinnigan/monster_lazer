@@ -374,8 +374,9 @@ var drawMine = function(){
 	
 	if (mineReady && mine.countdown) {
 		ctx.drawImage(mineImage, mine.x, mine.y);
-		ctx.font = "30px Monospace";
-		ctx.fillText("" + Math.ceil(mine.time), mine.x + 90, mine.y + 40);
+		ctx.font = "15px Monospace";
+		ctx.fillStyle = "rgb(0,0,0)";
+		ctx.fillText("" + Math.ceil(mine.time), mine.x + 45, mine.y + 43);
 	}
 
 	if (explodeReady && mine.exploding) {
@@ -828,7 +829,7 @@ var render = function (modifier) {
 		drawMonster(grumpy);
 		if (grumpy.deathFrames > 0) {
 			drawFrame(grumpy, grumpy.deathFrames, grumpy.deathx, grumpy.deathy, grumpy.deathAlpha);
-			grumpy.deathAlpha -= 3*modifier;
+			grumpy.deathAlpha -= 4*modifier;
 			if (grumpy.deathAlpha <= 0) {
 				grumpy.deathAlpha = 0;
 			}

@@ -8,9 +8,17 @@
 
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
+
 canvas.width = 800;
 canvas.height = 600;
+
 document.body.appendChild(canvas);
+
+ctx.fillStyle = "rgb(250,250,250)";
+ctx.font = "24px Monospace";
+ctx.textAlign = "left";
+ctx.textBaseline = "top";
+ctx.globalAlpha = 1.0;
 
 // Background images
 
@@ -68,14 +76,14 @@ var monsterImage = new Image();
 monsterImage.onload = function() {
 	monsterReady = true;
 };
-monsterImage.src = "images/monster.png";
+monsterImage.src = "images/monster_sprite.png";
 
-var monsterHitReady = false;
+/*var monsterHitReady = false;
 var monsterHit = new Image();
 monsterHit.onload = function() {
 	monsterHitReady = true;
 };
-monsterHit.src = "images/monster_hit.png";
+monsterHit.src = "images/monster_hit.png";*/
 
 
 // Second Monster
@@ -85,14 +93,14 @@ var uglyImage = new Image();
 uglyImage.onload = function() {
 	uglyReady = true;
 };
-uglyImage.src = "images/ugly.png";
+uglyImage.src = "images/ugly_sprite.png";
 
-var uglyHitReady = false;
+/*var uglyHitReady = false;
 var uglyHit = new Image();
 uglyHit.onload = function() {
 	uglyHitReady = true;
 };
-uglyHit.src = "images/ugly_hit.png";
+uglyHit.src = "images/ugly_hit.png";*/
 
 
 // Third Monster
@@ -102,14 +110,14 @@ var grumpyImage = new Image();
 grumpyImage.onload = function() {
 	grumpyReady = true;
 };
-grumpyImage.src = "images/grumpy.png";
+grumpyImage.src = "images/grumpy_sprite.png";
 
-var grumpyHitReady = false;
+/*var grumpyHitReady = false;
 var grumpyHit = new Image();
 grumpyHit.onload = function() {
 	grumpyHitReady = true;
 };
-grumpyHit.src = "images/grumpy_hit.png";
+grumpyHit.src = "images/grumpy_hit.png";*/
 
 // Mine images
 
@@ -126,6 +134,36 @@ explodeImage.onload = function() {
 	explodeReady = true;
 }
 explodeImage.src = "images/explosion.png";
+
+
+
+var drawFrame = function(mnstr, frameno, x, y, a) {
+	
+	ctx.save();
+	
+	// Fadeout for death animation
+	switch(frameno) {
+		case 6:
+			ctx.globalAlpha = 0.8;
+			break;
+		case 7:
+			ctx.globalAlpha = 0.6;
+			break;
+		case 8:
+			ctx.globalAlpha = 0.4;
+			break;
+		case 9:
+			ctx.globalAlpha = 0.2;
+			break;
+		default:
+			ctx.globalAlpha = a;
+			break;
+	}
+	
+	ctx.drawImage(mnstr.img, 100*frameno, 0, mnstr.width, mnstr.height, x, y, mnstr.width, mnstr.height);
+	
+	ctx.restore;
+};
 
 
 // Game Objects
@@ -145,9 +183,11 @@ var monster = {
 	max_health: 2,
 	hit:0,
 	img: monsterImage,
-	img_ready: monsterReady,
-	img_hit: monsterHit,
-	img_hit_ready: monsterHitReady
+	width: 100,
+	height: 100,
+	deathFrames: 0,
+	deathx: 0,
+	deathy: 0
 };
 
 
@@ -161,9 +201,11 @@ var ugly = {
 	max_health: 5,
 	hit: 0,
 	img: uglyImage,
-	img_ready: uglyReady,
-	img_hit: uglyHit,
-	img_hit_ready: uglyHitReady
+	width: 100,
+	height: 100,
+	deathFrames: 0,
+	deathx: 0,
+	deathy: 0
 };
 
 
@@ -177,9 +219,11 @@ var grumpy = {
 	max_health: 8,
 	hit: 0,
 	img: grumpyImage,
-	img_ready: grumpyReady,
-	img_hit: grumpyHit,
-	img_hit_ready: grumpyHitReady
+	width: 100,
+	height: 100, 
+	deathFrames: 0,
+	deathx: 0,
+	deathy: 0
 };
 
 
@@ -219,16 +263,17 @@ var kills = 0;
 var mostkills = 0;
 var next_level = 10;
 
-var dead = 0;
-var win = 0;
+var dead = 0.0;
+var win = 0.0;
 var bg = 3;
-var new_level = 3;
+var new_level = 2.0;
 
 
-// Reset when the player dies
-var reset = function() {
+// reset gamestate when the player dies
+var reset_gamestate = function() {
 	
 	mine.alpha = 0;
+	mine.time = 3.0;
 	mine.exploding = false;
 	mine.countdown = false;
 	mine.ready = true;
@@ -255,7 +300,7 @@ var reset = function() {
 	
 	next_level = 10;
 	
-	new_level = 3;
+	new_level = 2;
 
 	monster.speed = 100;
 	spawnMonster(monster);
@@ -294,22 +339,17 @@ var spawnMonster = function(mnstr) {
 var drawMonster = function(mnstr){
 	
 	// Monster
-	ctx.save();
-	
 
-	hitAlpha = mnstr.hit;
-	normalAlpha = 1 - mnstr.hit;
+	var hitAlpha = mnstr.hit;
+	var normalAlpha = 1 - mnstr.hit;
 	
-	ctx.globalAlpha = normalAlpha;
-	ctx.drawImage(mnstr.img, mnstr.x, mnstr.y);
-	ctx.globalAlpha = hitAlpha;
-	ctx.drawImage(mnstr.img_hit, mnstr.x, mnstr.y);
+	drawFrame(mnstr, 0, mnstr.x, mnstr.y, normalAlpha);
+	drawFrame(mnstr, 1, mnstr.x, mnstr.y, hitAlpha);
 	
-	ctx.restore();
-	
-	ctx.save();
 	
 	// Health bar
+	ctx.save();
+
 	ctx.strokeStyle='yellow';
 	ctx.lineWidth=10;
 	ctx.beginPath();
@@ -323,10 +363,17 @@ var drawMonster = function(mnstr){
 
 var drawHero = function(img){
 	// Hero
+	ctx.save();
+	ctx.globalAlpha = 1.0;
 	ctx.drawImage(img, hero.x, hero.y);
-}
+	ctx.restore();
+};
 
 var drawPower = function(){
+	
+	ctx.save();
+	
+	ctx.globalAlpha = 1.0;
 	
 	//  Power Background Image
 	if (powerBackgroundReady){
@@ -334,7 +381,7 @@ var drawPower = function(){
 	}
 	
 	// Lazer Power Level
-	ctx.save();
+	
 	
 	ctx.strokeStyle='blue';
 	ctx.lineWidth=23;
@@ -343,13 +390,13 @@ var drawPower = function(){
 	ctx.lineTo(0 + 20*lazer.power, 586);
 	ctx.stroke();
 	
-	ctx.restore();
-	
 	// Power Foreground Image
 	if (powerForegroundReady){
 		ctx.drawImage(powerForegroundImage, 0, 574);
 	}
-}
+	
+	ctx.restore();
+};
 
 var drawMine = function(){
 	
@@ -368,7 +415,7 @@ var drawMine = function(){
 	}
 
 	ctx.restore();
-}
+};
 
 // Handle keyboard controls
 var keysDown = {};
@@ -389,12 +436,16 @@ var remove = function(mnstr) {
 };
 
 // Mine Damage on a monster
-var mine_damage = function(mnstr) {
+var mine_damage = function(mnstr, modifier) {
 	
 	var d = Math.sqrt(distance_squared(mine, mnstr));
 	// monster is completely safe at mine.radius px away
 	if (d < mine.radius && mine.alpha >= 0.0){
 		mnstr.health -= Math.abs(mine.damage*mine.alpha*(1/((d*d) + 1)));
+		mnstr.hit += 5*modifier;
+		if (mnstr.hit > 1) {
+			mnstr.hit = 1;
+		}
 	}
 	
 	if (mnstr.health <= 0) {
@@ -412,14 +463,14 @@ var kill_monster = function(mnstr) {
 	mnstr.hit = 0;
 	
 	if (level == win_level){
-		win = 3;
+		win = 2;
 	}
 	if (kill_points >= next_level) {
 		level_up();
 	}
 	
 	spawnMonster(mnstr);
-}
+};
 
 
 // Level up function
@@ -427,7 +478,7 @@ var level_up = function(){
 	
 	level++;
 	next_level = kill_points + level + 10;
-	new_level = 3;
+	new_level = 2;
 	
 	// Let ugly enter game
 	if (level == 1) {
@@ -452,7 +503,7 @@ var level_up = function(){
 	}
 	
 	lazer.replenish_rate += 0.2;
-}
+};
 
 // Controls Monster Movement towards player
 var move = function(mnstr, modifier) {
@@ -562,14 +613,14 @@ var update = function (modifier) {
 	// boom
 	if (mine.exploding) {
 		
-		mine_damage(monster);
-		mine_damage(ugly);
-		mine_damage(grumpy);
+		mine_damage(monster, modifier);
+		mine_damage(ugly, modifier);
+		mine_damage(grumpy, modifier);
 		
 		// Mine might kill hero :(
 		if (distance_squared(hero, mine) < 2000 && mine.alpha > 0.5) {
-			dead = 3;
-			reset();
+			dead = 2;
+			reset_gamestate();
 		}
 		
 		mine.alpha -= 2*modifier;
@@ -651,7 +702,7 @@ var update = function (modifier) {
 	}
 	
 	if (new_level > 0) {
-		new_level -= 1*modifier;
+		new_level -= 2*modifier;
 		if (new_level < 0){
 			new_level = 0;
 		}
@@ -670,9 +721,9 @@ var update = function (modifier) {
 		&& hero.y <= (lazer.target.y + 32)
 		&& lazer.target.y <= (hero.y + 32)) {
 		
-		dead = 3;
+		dead = 2;
 		
-		reset();
+		reset_gamestate();
 	}
 	
 	
@@ -726,6 +777,12 @@ var update = function (modifier) {
 
 var render = function () {
 	
+	ctx.fillStyle = "rgb(250,250,250)";
+	ctx.font = "24px Monospace";
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
+	ctx.globalAlpha = 1.0;
+	
 	// Draw Background
 	if (bgReady) {
 		ctx.save();
@@ -754,9 +811,17 @@ var render = function () {
 	drawMine();
 	
 	// Draw Monsters
-	drawMonster(monster);
-	drawMonster(ugly);
-	drawMonster(grumpy);
+	if (monsterReady) {
+		drawMonster(monster);
+	}
+	
+	if (uglyReady) {
+		drawMonster(ugly);
+	}
+	
+	if (grumpyReady) {
+		drawMonster(grumpy);
+	}
 	
 	// Draw Hero
 	if (level < win_level){
@@ -772,48 +837,47 @@ var render = function () {
 	// Draw Power bar
 	drawPower();
 	
-	// Score stuff
-	ctx.fillStyle = "rgb(250,250,250)";
-	ctx.font = "24px Monospace";
-	ctx.textAlign = "left";
-	ctx.textBaseline = "top";
-	
 	// Categories
 	ctx.fillText("          Score       Kills       Level", 10, 10);
 	
 	// Score
 	ctx.fillText("Current:   " + score, 10, 40);
-	ctx.fillText("" + kills, 340, 40);
-	ctx.fillText("" + (level+1), 515, 40);
+	ctx.fillText("                       " + kills, 10, 40);
+	ctx.fillText("                                   " + (level+1), 10, 40);
 	
 	// High Scores
 	ctx.fillText("Best:      " + highscore, 10, 70);
-	ctx.fillText("" + mostkills, 340, 70);
-	ctx.fillText("" + (highest_level+1), 515, 70);
+	ctx.fillText("                       " + mostkills, 10, 70);
+	ctx.fillText("                                   " + (highest_level+1), 10, 70);
+
 	
 	// Draw death message
-	ctx.save();
-	ctx.globalAlpha = dead/3;
-	ctx.font = "350px Monospace";
-	ctx.fillStyle = "red";
-	ctx.fillText("DEAD", -25, 150);
-	ctx.restore();
+	if (dead > 0.0) {
+		ctx.save();
+		ctx.font = "350px Monospace";
+		ctx.fillStyle = "rgba(255, 0, 0, " + dead/2 + ")";
+		ctx.fillText("DEAD", -25, 150);
+		ctx.restore();
+	}
 	
 	// Draw win message
-	ctx.save();
-	ctx.globalAlpha = win/3;
-	ctx.font = "300px Monospace";
-	ctx.fillStyle = "white";
-	ctx.fillText("WIN", 50, 150);
-	ctx.restore();
+	if (win > 0.0) {
+		ctx.save();
+		ctx.font = "300px Monospace";
+		ctx.fillStyle = "rgba(255, 255, 255, " + win/2 + ")";
+		ctx.fillText("WIN", 50, 150);
+		ctx.restore();
+	}
+	
 	
 	// Draw new level message
-	ctx.save();
-	ctx.globalAlpha = new_level/3;
-	ctx.font = "80px Monospace";
-	ctx.fillStyle = "white";
-	ctx.fillText("Level " + (level+1), 280, 100);
-	ctx.restore();
+	if (new_level > 0.0) {
+		ctx.save();
+		ctx.font = "80px Monospace";
+		ctx.fillStyle = "rgba(255, 255, 255, " + new_level/2 + ")";
+		ctx.fillText("Level " + (level+1), 420, 520);
+		ctx.restore();
+	}
 	
 };
 
@@ -847,5 +911,5 @@ requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame
 
 // Let's play!
 var then = Date.now();
-reset();
+reset_gamestate();
 main();

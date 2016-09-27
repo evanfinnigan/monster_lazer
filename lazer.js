@@ -764,6 +764,9 @@ var render = function (modifier) {
 		ctx.restore();
 	}
 	
+	// Draw mine
+	drawMine();
+	
 	// Draw Lazer Beam
 	if (lazer.on && lazer.power > 0) {
 		ctx.save();
@@ -779,9 +782,6 @@ var render = function (modifier) {
 		ctx.stroke();
 		ctx.restore();
 	} 
-	
-	// Draw mine
-	drawMine();
 	
 	var next_frame = false;
 	

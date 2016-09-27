@@ -160,7 +160,7 @@ var drawFrame = function(mnstr, frameno, x, y, a) {
 			break;
 	}
 	
-	ctx.drawImage(mnstr.img, 100*frameno, 0, mnstr.width, mnstr.height, x, y, mnstr.width, mnstr.height);
+	ctx.drawImage(mnstr.img, (100*frameno), 0, mnstr.width, mnstr.height, x, y, mnstr.width, mnstr.height);
 	
 	ctx.restore;
 };
@@ -268,6 +268,8 @@ var win = 0.0;
 var bg = 3;
 var new_level = 2.0;
 
+// Animation frames
+var showFrame = 0.0;
 
 // reset gamestate when the player dies
 var reset_gamestate = function() {
@@ -457,6 +459,10 @@ var mine_damage = function(mnstr, modifier) {
 
 // Monster dies
 var kill_monster = function(mnstr) {
+	
+	mnstr.deathFrames = 1;
+	mnstr.deathx = mnstr.x;
+	mnstr.deathy = mnstr.y;
 	
 	kills++;
 	kill_points += mnstr.max_health;
@@ -775,7 +781,7 @@ var update = function (modifier) {
 	
 };
 
-var render = function () {
+var render = function (modifier) {
 	
 	ctx.fillStyle = "rgb(250,250,250)";
 	ctx.font = "24px Monospace";
@@ -810,17 +816,52 @@ var render = function () {
 	// Draw mine
 	drawMine();
 	
+	var next_frame = false;
+	
+	showFrame += modifier;
+	if (showFrame >= 0.03) {
+		next_frame = true;
+		showFrame = 0.0;
+	}
+	
 	// Draw Monsters
 	if (monsterReady) {
 		drawMonster(monster);
+		if (monster.deathFrames > 0) {
+			drawFrame(monster, monster.deathFrames, monster.deathx, monster.deathy, 1.0);
+			if (next_frame){
+				monster.deathFrames++;
+			}
+			if (monster.deathFrames == 10){
+				monster.deathFrames = 0;
+			}
+		}
 	}
 	
 	if (uglyReady) {
 		drawMonster(ugly);
+		if (ugly.deathFrames > 0) {
+			drawFrame(ugly, ugly.deathFrames, ugly.deathx, ugly.deathy, 1.0);
+			if (next_frame){
+				ugly.deathFrames++;
+			}
+			if (ugly.deathFrames == 10){
+				ugly.deathFrames = 0;
+			}
+		}
 	}
 	
 	if (grumpyReady) {
 		drawMonster(grumpy);
+		if (grumpy.deathFrames > 0) {
+			drawFrame(grumpy, grumpy.deathFrames, grumpy.deathx, grumpy.deathy, 1.0);
+			if (next_frame){
+				grumpy.deathFrames++;
+			}
+			if (grumpy.deathFrames == 10){
+				grumpy.deathFrames = 0;
+			}
+		}
 	}
 	
 	// Draw Hero
@@ -895,7 +936,7 @@ var main = function () {
 		var delta = now - then;
 		
 		update(delta/1000);
-		render();
+		render(delta/1000);
 	} 
 	
 	then=now;

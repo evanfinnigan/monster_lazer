@@ -18,7 +18,6 @@ ctx.fillStyle = "rgb(250,250,250)";
 ctx.font = "24px Monospace";
 ctx.textAlign = "left";
 ctx.textBaseline = "top";
-ctx.globalAlpha = 1.0;
 
 // Background images
 
@@ -253,6 +252,10 @@ var reset_gamestate = function() {
 	if (level > highest_level) {
 		highest_level = level;
 	}
+	 
+	if (kills > mostkills) {
+		mostkills = kills;
+	}
 	
 	hero.x = (canvas.width / 2) - 50;
 	hero.y = (canvas.height / 2) - 50;
@@ -374,7 +377,7 @@ var drawMine = function(){
 	
 	if (mineReady && mine.countdown) {
 		ctx.drawImage(mineImage, mine.x, mine.y);
-		ctx.font = "15px Monospace";
+		ctx.font = "bold 20px Monospace";
 		ctx.fillStyle = "rgb(0,0,0)";
 		ctx.fillText("" + Math.ceil(mine.time), mine.x + 45, mine.y + 43);
 	}
@@ -857,6 +860,10 @@ var render = function (modifier) {
 	// Draw Power bar
 	drawPower();
 	
+	ctx.save();
+	ctx.globalAlpha = 1.0;
+	ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
+	
 	// Categories
 	ctx.fillText("          Score       Kills       Level", 10, 10);
 	
@@ -869,7 +876,8 @@ var render = function (modifier) {
 	ctx.fillText("Best:      " + highscore, 10, 70);
 	ctx.fillText("                       " + mostkills, 10, 70);
 	ctx.fillText("                                   " + (highest_level+1), 10, 70);
-
+	
+	ctx.restore();
 	
 	// Draw death message
 	if (dead > 0.0) {

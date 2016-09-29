@@ -259,6 +259,7 @@ var reset_gamestate = function() {
 	
 	hero.x = (canvas.width / 2) - 50;
 	hero.y = (canvas.height / 2) - 50;
+	hero.speed = 256;
 	
 	lazer.power = 5;
 	lazer.replenish_rate = 1.0;
@@ -468,14 +469,18 @@ var level_up = function(){
 		lazer.max_power += lazer.max_power;
 	}
 	
-	monster.speed += 10;
+	monster.speed += 7;
 	
 	if (level > 1) {
-		ugly.speed += 10;
+		ugly.speed += 7;
 	}
 	
 	if (level > 2) {
-		grumpy.speed += 10;
+		grumpy.speed += 7;
+	}
+	
+	if (level > 11) {
+		hero.speed += 8;
 	}
 	
 	lazer.replenish_rate += 0.2;

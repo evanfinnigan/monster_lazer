@@ -683,7 +683,7 @@ var update = function (modifier) {
 	}
 	
 	if (new_level > 0) {
-		new_level -= 2*modifier;
+		new_level -= 1*modifier;
 		if (new_level < 0){
 			new_level = 0;
 		}
@@ -887,6 +887,7 @@ var render = function (modifier) {
 	// Draw death message
 	if (dead > 0.0) {
 		ctx.save();
+		ctx.globalAlpha = dead/2;
 		ctx.font = "350px Monospace";
 		ctx.fillStyle = "rgba(255, 0, 0, " + dead/2 + ")";
 		ctx.fillText("DEAD", -25, 150);
@@ -896,6 +897,7 @@ var render = function (modifier) {
 	// Draw win message
 	if (win > 0.0) {
 		ctx.save();
+		ctx.globalAlpha = win/2;
 		ctx.font = "300px Monospace";
 		ctx.fillStyle = "rgba(255, 255, 255, " + win/2 + ")";
 		ctx.fillText("WIN", 50, 150);
@@ -906,6 +908,7 @@ var render = function (modifier) {
 	// Draw new level message
 	if (new_level > 0.0) {
 		ctx.save();
+		ctx.globalAlpha = new_level/2;
 		ctx.font = "80px Monospace";
 		ctx.fillStyle = "rgba(255, 255, 255, " + new_level/2 + ")";
 		ctx.fillText("Level " + (level+1), 420, 520);

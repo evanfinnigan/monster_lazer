@@ -228,6 +228,18 @@ var kills = 0;
 var mostkills = 0;
 var next_level = 10;
 
+// Check for saved data
+if (localStorage.getItem('highscore')) {
+	highscore = localStorage.getItem('highscore');
+}
+if (localStorage.getItem('highest_level')) {
+	highest_level = localStorage.getItem('highest_level');
+}
+if (localStorage.getItem('mostkills')) {
+	mostkills = localStorage.getItem('mostkills');
+}
+
+
 var dead = 0.0;
 var win = 0.0;
 var bg = 3;
@@ -247,14 +259,17 @@ var reset_gamestate = function() {
 	
 	if (score > highscore) {
 		highscore = score;
+		localStorage.setItem('highscore', highscore);
 	}
 	
 	if (level > highest_level) {
 		highest_level = level;
+		localStorage.setItem('highest_level', highest_level);
 	}
 	 
 	if (kills > mostkills) {
 		mostkills = kills;
+		localStorage.setItem('mostkills', mostkills);
 	}
 	
 	hero.x = (canvas.width / 2) - 50;

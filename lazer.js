@@ -19,7 +19,7 @@ ctx.font = "24px Monospace";
 ctx.textAlign = "left";
 ctx.textBaseline = "top";
 
-// Background images
+// Background image
 
 var bgReady = false;
 var bgImage = new Image();
@@ -29,21 +29,23 @@ bgImage.onload = function() {
 bgImage.src = "images/cave.png";
 
 
-// Power Meter
+// Foreground image
 
-var powerBackgroundReady = false;
-var powerBackgroundImage = new Image();
-powerBackgroundImage.onload = function() {
-	powerBackgroundReady = true;
+var fgReady = false;
+var fgImage = new Image();
+fgImage.onload = function() {
+	fgReady = true;
 };
-powerBackgroundImage.src = "images/power_bg.png";
+fgImage.src = "images/dark_cave.png";
 
-var powerForegroundReady = false;
-var powerForegroundImage = new Image();
-powerForegroundImage.onload = function() {
-	powerForegroundReady = true;
+
+// Decorations
+var torchReady = false;
+var torchImage = new Image();
+torchImage.onload = function() {
+	torchReady = true;
 };
-powerForegroundImage.src = "images/power_fg.png";
+torchImage.src =  "images/torch.png";
 
 
 // Hero image
@@ -135,6 +137,13 @@ var hero = {
 	speed: 256 // movement in pixels per second
 };
 
+var torch = {
+	img: torchImage,
+	current_frame: 0,
+	total_frames: 8,
+	width: 100,
+	height: 100
+};
 
 // Monster
 var monster = {
@@ -160,8 +169,8 @@ var ugly = {
 	speedx: 0,
 	speedy: 0,
 	starting_speed: 40,
-	health: 5,
-	max_health: 5,
+	health: 4,
+	max_health: 4,
 	hit: 0,
 	img: uglyImage,
 	width: 100,
@@ -326,7 +335,6 @@ var spawnMonster = function(mnstr) {
 var drawMonster = function(mnstr){
 	
 	// Monster
-
 	var hitAlpha = mnstr.hit;
 	var normalAlpha = 1 - mnstr.hit;
 	
@@ -337,15 +345,26 @@ var drawMonster = function(mnstr){
 	// Health bar
 	ctx.save();
 
+	ctx.strokeStyle='black';
+	ctx.lineWidth=12;
+	ctx.beginPath();
+	ctx.moveTo(mnstr.x + 50 + 10*mnstr.max_health, mnstr.y);
+	ctx.lineTo(mnstr.x + 50 - 10*mnstr.max_health, mnstr.y);
+	ctx.stroke();
+
 	ctx.strokeStyle='yellow';
 	ctx.lineWidth=10;
 	ctx.beginPath();
-	ctx.moveTo((mnstr.x + 50 + 50*(mnstr.health/mnstr.max_health)), mnstr.y);
-	ctx.lineTo((mnstr.x + 50 - 50*(mnstr.health/mnstr.max_health)), mnstr.y);
+	ctx.moveTo(mnstr.x + 50 + 10*mnstr.health, mnstr.y);
+	ctx.lineTo(mnstr.x + 50 - 10*mnstr.health, mnstr.y);
 	ctx.stroke();
 	
 	ctx.restore();
 	
+}
+
+var drawDecoration = function(deco, x, y){
+	drawFrame(deco, deco.current_frame, x, y, 1.0);
 }
 
 var drawHero = function(img){
@@ -357,30 +376,27 @@ var drawHero = function(img){
 };
 
 var drawPower = function(){
-	
 	ctx.save();
 	
 	ctx.globalAlpha = 1.0;
 	
-	//  Power Background Image
-	if (powerBackgroundReady){
-		ctx.drawImage(powerBackgroundImage, 0, 574);
-	}
+	ctx.fillText("Power:", 10, 574);
 	
-	// Lazer Power Level
-	
-	
-	ctx.strokeStyle='blue';
-	ctx.lineWidth=23;
+	// Power Background
+	ctx.strokeStyle='black';
+	ctx.lineWidth=24;
 	ctx.beginPath();
-	ctx.moveTo(0, 586);
-	ctx.lineTo(0 + 20*lazer.power, 586);
+	ctx.moveTo(98, 586);
+	ctx.lineTo(102 + 20*lazer.max_power, 586);
 	ctx.stroke();
 	
-	// Power Foreground Image
-	if (powerForegroundReady){
-		ctx.drawImage(powerForegroundImage, 0, 574);
-	}
+	// Lazer Power Level
+	ctx.strokeStyle='red';
+	ctx.lineWidth=20;
+	ctx.beginPath();
+	ctx.moveTo(100, 586);
+	ctx.lineTo(100 + 20*lazer.power, 586);
+	ctx.stroke();
 	
 	ctx.restore();
 };
@@ -559,25 +575,25 @@ var update = function (modifier) {
 	}
 	
 	// Player Motion Control
-	if (38 in keysDown) { // player holding up
+	if (38 in keysDown || 87 in keysDown) { // player holding up / w
 		hero.y -= hero.speed * modifier;
 		if (hero.y < -36) {
 			hero.y = -36;
 		}
 	}
-	if (40 in keysDown) { // player holding down
+	if (40 in keysDown || 83 in keysDown) { // player holding down / s
 		hero.y += hero.speed * modifier;
 		if (hero.y > canvas.height - 68) {
 			hero.y = canvas.height - 68;
 		}
 	}
-	if (37 in keysDown) { // player holding left
+	if (37 in keysDown || 65 in keysDown) { // player holding left / a
 		hero.x -= hero.speed * modifier;
 		if (hero.x < -36) {
 			hero.x = -36;
 		}
 	}
-	if (39 in keysDown) { // player holding right
+	if (39 in keysDown || 68 in keysDown) { // player holding right / d
 		hero.x += hero.speed * modifier;
 		if (hero.x > canvas.width - 68) {
 			hero.x = canvas.width - 68;
@@ -664,7 +680,7 @@ var update = function (modifier) {
 	}
 	
 	// Fire Lazer 
-	if (65 in keysDown || 32 in keysDown) { // player holding 'a'
+	if (32 in keysDown) { // player holding spacebar
 		// Only works if a monster is one the screen
 		if (lazer.target.x < canvas.width - 20
 			&& lazer.target.y < canvas.height - 20
@@ -787,6 +803,29 @@ var render = function (modifier) {
 		ctx.restore();
 	}
 	
+	var next_frame = false;
+	
+	showFrame += modifier;
+	if (showFrame >= 0.06) {
+		next_frame = true;
+		showFrame = 0.0;
+	}
+	
+	// Draw torches
+	if (torchReady && level >= 9) {
+		ctx.save();
+		drawDecoration(torch, 130, 200);
+		drawDecoration(torch, 600, 200);
+		if (next_frame) {
+			torch.current_frame++;
+			if (torch.current_frame >= torch.total_frames)
+			{
+				torch.current_frame = 0;
+			}
+		}
+		ctx.restore();
+	}
+	
 	// Draw mine
 	drawMine();
 	
@@ -805,14 +844,6 @@ var render = function (modifier) {
 		ctx.stroke();
 		ctx.restore();
 	} 
-	
-	var next_frame = false;
-	
-	showFrame += modifier;
-	if (showFrame >= 0.03) {
-		next_frame = true;
-		showFrame = 0.0;
-	}
 	
 	// Draw Monsters
 	if (monsterReady) {
@@ -875,6 +906,15 @@ var render = function (modifier) {
 		if (championReady) {
 			drawHero(championImage);
 		}
+	}
+	
+	// Draw foreground
+	if (fgReady && level >= 9)
+	{
+		ctx.save();
+		ctx.globalAlpha = 1.0;
+		ctx.drawImage(fgImage, 0, 0);
+		ctx.restore();
 	}
 	
 	// Draw Power bar

@@ -12,3 +12,5 @@ All artwork was created by myself, Evan Finnigan, with the exception of the crow
 Artwork was created using paint.net
 
 Feel free to use this code and make your own version! If you use this code, please provide a link back to this page.
+
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/T6T62013E)
